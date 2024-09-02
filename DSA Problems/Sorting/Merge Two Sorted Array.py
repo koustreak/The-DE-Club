@@ -23,8 +23,8 @@ def merge_sorted_arrays_inplace(arr1, arr2):
         k -= 1
 
 # Example usage:
-arr1 = [1, 2, 3]
-arr2 = [4, 5, 6]
+arr1 = [1, 2, 3,7]
+arr2 = [0, 5, 6]
 
 merge_sorted_arrays_inplace(arr1, arr2)
 print(arr1)
