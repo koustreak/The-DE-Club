@@ -23,7 +23,8 @@ INSERT INTO user_content (content_id, content_text, content_type, customer_id) V
 (7, 'UnderstandING Foreign Keys', 'Article', 107),
 (8, 'POSTGRESQL PERFORMANCE TUNING', 'Tutorial', 108),
 (9, 'Common Table Expressions', 'Guide', 109),
-(10, 'PL/pgSQL BASICS', 'Tutorial', 110);
+(10, 'THIs Is FiRST senTENce. THIs Is Second senTENce', 'Guide', 109),
+(11, 'tHIS IS A simple book', 'Tutorial', 110);
 
 
 -- using initcap 
@@ -35,14 +36,59 @@ select
 from user_content
 
 -- without using initcap function 
-
-SELECT 
-    content_id, 
-    STRING_AGG(UPPER(LEFT(word, 1)) || LOWER(SUBSTRING(word FROM 2)), ' ') AS formatted_text
-FROM (
+WITH cte AS NOT MATERIALIZED (
     SELECT 
         content_id, 
         unnest(string_to_array(content_text, ' ')) AS word
     FROM user_content
-) sub
-GROUP BY content_id;
+)
+SELECT 
+    cte.content_id, 
+    STRING_AGG(UPPER(LEFT(word, 1)) || LOWER(SUBSTRING(word FROM 2)), ' ') AS formatted_text,
+    uc.content_text AS original_text
+FROM cte 
+LEFT JOIN user_content uc 
+    ON cte.content_id = uc.content_id
+GROUP BY cte.content_id, uc.content_text
+
+-- Lowercase those word , which have 1 letter only 
+
+WITH cte AS NOT MATERIALIZED (
+    SELECT 
+        content_id, 
+        unnest(string_to_array(content_text, ' ')) AS word
+    FROM user_content
+)
+SELECT
+    cte.content_id,
+    STRING_AGG(
+        CASE 
+            WHEN LENGTH(word) = 1 THEN LOWER(word)
+            ELSE UPPER(LEFT(word, 1)) || LOWER(SUBSTRING(word FROM 2))
+        END, ' '
+    ) AS formatted_text,
+    uc.content_text AS original_text
+FROM cte
+LEFT JOIN user_content uc
+    ON cte.content_id = uc.content_id
+GROUP BY cte.content_id, uc.content_text
+
+-- Multiple Sentences in Same Row seperated by .
+
+WITH cte AS NOT MATERIALIZED (
+    select 
+	    content_id, 
+	    regexp_split_to_table(content_text, '(?<=[.!?])\s+') as sentence
+    from
+        user_content
+)
+SELECT 
+    cte.content_id, 
+    STRING_AGG(
+        UPPER(LEFT(sentence, 1)) || LOWER(SUBSTRING(sentence FROM 2)), ' '
+    ) AS formatted_text,
+    uc.content_text 
+FROM cte
+LEFT JOIN user_content uc 
+    ON cte.content_id = uc.content_id 
+GROUP BY cte.content_id, uc.content_text;
