@@ -1,10 +1,10 @@
-'''
+/*
 Convert the first letter of each word found in content_text to uppercase, 
 while keeping the rest of the letters lowercase.
 
 Your output should include the original text in one column 
 and the modified text in another column.
-'''
+*/
 
 CREATE TABLE user_content (
     content_id BIGINT PRIMARY KEY,
